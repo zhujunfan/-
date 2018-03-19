@@ -1,0 +1,162 @@
+Block Chain Notes --zjf
+
+Chapter 1 Introduction
+Satoshi Nakamoto invented in 2008,
+Total supply: 21 million
+
+Digital: cannot be physically made, generated or transferred electronically
+Decentralized: not controlled by any country/organization
+Revolutionary: transactions allow anonymity
+Global: borderless, can be used anywhere
+
+Technology
+1 Hash Function
+  Takes string as input, and fixed size as output
+  Easy to verify Y given x: Y=H(x);
+  Hard to invert (find x given Y)
+  SHA-256 (inversion running time O(2^256))
+Message(myfile.txt) --> Hash Algorithm(SHA-256) --> Hash Value (...)
+
+2 Digital Signature/ Public Key/ Private Key/ Public Address
+  Private Key derives Public Key and Digital Signature
+  Public Key derives multiple public address
+    Bitcoin address-->Public address  Private Key(Wallet Import Format)
+
+3 Nodes
+  Functions bitcoin network
+  Maintain a copy of blockchain
+  Miners, Core
+Global Bitcoin Nodes Distribution: 12026 nodes 
+
+4 Wallet
+  Stores private keys, public keys and addresses
+  Paper/ Desktop/ Online/ Hardware wallet
+Bitcoin address--load and verify--Private Key-->Spend
+
+5 Transaction
+  Digitally signed message
+  A pays 1 bitcoin to B
+     A signs(1 BTC+prev TX+B’s address)
+     B verifies his ownership
+  Public transaction history, private identity
+  Multiple inputs, max 2 outputs
+
+6 Double Spending
+  Concurrently send a single unit of bitcoin to 2 different sources
+  Need sb to verify --- Miners
+     Once the first transaction accepted, the second one will be rejected
+     By running address history
+  Time stamp Server
+     Node will accept first received block and keep the other
+     Work on the longest
+
+7 Mining
+  A process by which transactions are added into blockchain (ledger)
+  Done by solving puzzles using powerful computing chips.
+
+  Miners are rewarded--
+Bitcoin after confirming a block
+  (initially 50, currently 12.5, halves every 210k blocks)
+Transaction fee
+Cumulative BTC in circulation now nearly 14,000,000
+
+  Verify Transaction
+Each sender has enough balance and hasn’t double spent
+Transaction itself is valid
+  Proof-of-work (PoW)
+Incrementing a nonce to find a block hash with required zero bits
+Prev hash+transaction+nonce-->SHA-256-->required hash value
+Random brute force is the only way (cannot reverse SHA-256)
+Average work required exponential as 0 bits increases
+  Difficulty
+Difficulty adjusted by moving average 2016 blocks(2 weeks)
+1 PH/s (Peta hash per second) is 1,000,000,000,000,000 (one quadrillion)
+S9 13.5 TH/s (Terra hash per second) S9, more than 6 years to mine a block
+    
+How Block Chain Network Works
+1 New transactions are broadcast to all nodes
+2 Each node collects some new verified transactions into a block, and find PoW
+3 Each node works on finding a difficult PoW (nonce) for its block
+4 When a node finds a PoW, it broadcasts the block to all nodes
+5 Nodes accept the block only if all transactions in it are valid and not already spent
+6 Nodes express their acceptance of the block by working on creating the next block in the chain, using the hash of the accepted block as the previous hash
+
+Basic Problems
+1 Security
+  51% attack
+The ability of sb controlling a majority of network hash rate
+Delay transaction confirmation
+Reverse/revise his own transactions(double spent)
+  Attacker’s dilemma
+Only be able to modify recent transactions
+Cannot change other’s transaction
+Cannot create coin out of air
+Attack vs. Block reward
+
+2 Potential Problems
+  Vulnerable to attacks
+  Block size 1MB, limit # of transactions
+  Transaction confirmation slow, average 10 min per block, 2-3 transactions per second (VISA 24000)
+  High transaction fees
+
+Solutions
+  Fork
+  Lightening network
+  RSK
+
+Solutions
+1 Fork
+  SegWit vs. SegWit2X
+Soft fork(backward compatible, temporary) vs. hard fork
+Moving signature to end of block, increasing size from 1M to 2M
+  Bitcoin Cash
+=first fork: maintain bitcoin network
+cannot make each block too big: total size...
+increase block size-- more transaction fee--miners want money--miners want to claim much faster transaction speed
+Miners vs. Core
+8MB block size
+Bitcoin Gold -- decentralized mining (equihash), good GPU
+Bitcoin Dimond -- 210mln, 8MB block, 5time faster, encrypt balance(X13), 10 times supply
+Around 20 other forks
+
+2 Lightening Network
+  ---LN works by moving the value from the ownership of the bitcoins to the promise of ownership of the bitcoins
+  Open a payment channel
+  Record on block chain
+  Instant payment
+  Close the channel, report to block chain
+  
+  Seems like credit payment: instant payment, scalability, low cost, cross block chains
+  Currently around 977 nodes running 1,827 channels on the LN
+Payment channel: channel is not transaction, but private ordering.
+Each party deposit 1, safe, when channel close, the safe channel is open you get what you have,
+A and B send money quickly to others. Record on block chain. Within a month, all transaction between two are not dealt, time is up, channel is closed, find the final, report. 
+Low cost, but higher maybe? Solution to big coin, 
+
+3 RSK (Rootstock)
+  ---A smart contract platform that is connected to the bitcoin block chain through sidechain technology
+2-way peg to bitcoin --> smart bitcoin, without disturbing miners
+Scales to 100 transactions per second without sacrificing decentralization
+Instant payment, allow creating blocks at 10 seconds average interval
+
+Questions:
+
+1 Bitcoin is decentralized, but the hashrate & control is centralized to a few large miners, only large miners can benefit. So the system is centralized?
+2 What incentivize people to run a full node? I can mine bitcoin without running a full node.
+3 If bitcoin price does not grow fast enough, mining difficulty will drop, and mining will eventually become unprofitable for less efficient due to halving rewards. So small miners will leave and it will weaken bitcoin security?
+4 How to realize transfer 0.5 bitcoin technologically?
+5 In the lightening network. If one defaults, how to charge back?  
+6 How to add new bitcoins during mining (only mining?), how does the minner get rewarded? When mining a new block, can the miner write new coins in the block?
+7 What is the difference between other digital currency with Bitcoin? i.e. Litecoin, ETH
+8 If I have 100 BTC, can I sell them together at current price?
+9 If exchanging bitcoin for real currency, how to gurantee no fraud, i.g. I get bitcoin but don't give back dollar or vice versa?
+10 How to apply equity quant-trading strategies on bitcoin market? There are a lot of people doing this, how’s the performance?
+11 For the channels of lightning network, does the number of channel have limit? i.g. number means the number of transactions happening per second? 
+12 Any applications of the idea of block chains to some other domains (i.e. other than crypto currency)?
+13 I resemble instant payment = credit card, so what’s after default?
+14 Not understanding: compare advantages and disadvantages between hashgraph, merkle tree & block chain
+15 Besides computing power, what other factors, such as network latency or storage performance, would affect bitcoin/block chain mining/verification?
+16 About security: bitcoin is ensured by computing power, because individual is hard to challenge all the network, so it is safe. But, if apply block chain in other fields, when the network power is limited, how to maintain security?
+17 How anonimity?Transaction exposed, send coin--get ip exposed, radically can track you in certain media address?
+18 Who issues the bitcoin if there is no central party, as the number of bitcoin is increasing every year assuming bitcoin can not generated from air?
+19 Technologically wants to understand, such as algorithms for concentrating on hash power, new ideas on block chains.
