@@ -1,0 +1,217 @@
+Chapter 2 About Ethereum
+
+Brief Review of Bitcoin -- A tale of Bob and Alice
+  Cryptographic hash function: “dog”--MD5-->....%$@.....
+  Merkle Tree
+  Distributed consensus and system fail-proof 
+
+Bob sends a message to Alice
+1.How can Bob make sure that no one else can read this message?
+   Bob encrypts the message with Alice’s public key (everyone knows), Alice decrypts the message using her own private key (only she knows)
+2.How does Alice know that the message indeed comes from Bob?
+   Bob signs the message with his private key (only he knows), Alice verifies the message signature using Bob’s public key (everyone knows)
+
+Technology:
+
+1 Smart Contract -- a ballot example  
+Environment: JavaScript
+pragma solidity ^0.4.0;
+contract Ballot {
+
+    struct Voter {
+        uint weight;
+        bool voted;
+        uint8 vote;
+        address delegate;
+    }
+    struct Proposal {
+        uint voteCount;
+    }
+
+    address chairperson;
+    mapping(address => Voter) voters;
+    Proposal[] proposals;
+
+    /// Create a new ballot with $(_numProposals) different proposals.
+    function Ballot(uint8 _numProposals) public {
+        chairperson = msg.sender;
+        voters[chairperson].weight = 1;
+        proposals.length = _numProposals;
+    }
+
+    /// Give $(toVoter) the right to vote on this ballot.
+    /// May only be called by $(chairperson).
+    function giveRightToVote(address toVoter) public {
+        if (msg.sender != chairperson || voters[toVoter].voted) return;
+        voters[toVoter].weight = 1;
+    }
+
+    /// Delegate your vote to the voter $(to).
+    function delegate(address to) public {
+        Voter storage sender = voters[msg.sender]; // assigns reference
+        if (sender.voted) return;
+        while (voters[to].delegate != address(0) && voters[to].delegate != msg.sender)
+            to = voters[to].delegate;
+        if (to == msg.sender) return;
+        sender.voted = true;
+        sender.delegate = to;
+        Voter storage delegateTo = voters[to];
+        if (delegateTo.voted)
+            proposals[delegateTo.vote].voteCount += sender.weight;
+        else
+            delegateTo.weight += sender.weight;
+    }
+
+    /// Give a single vote to proposal $(toProposal).
+    function vote(uint8 toProposal) public {
+        Voter storage sender = voters[msg.sender];
+        if (sender.voted || toProposal >= proposals.length) return;
+        sender.voted = true;
+        sender.vote = toProposal;
+        proposals[toProposal].voteCount += sender.weight;
+    }
+
+    function winningProposal() public constant returns (uint8 _winningProposal) {
+        uint256 winningVoteCount = 0;
+        for (uint8 prop = 0; prop < proposals.length; prop++)
+            if (proposals[prop].voteCount > winningVoteCount) {
+                winningVoteCount = proposals[prop].voteCount;
+                _winningProposal = prop;
+            }
+    }
+}
+http://remix.ethereum.org/
+Explanations:
+  Classes
+Voter (weight, has_voted, vote, delegate, etc.)
+Proposal (vote_count)
+  Functions
+Ballot (chairperson, proposals) // create a new ballot with different proposals
+giveRightToVote (voter_address)// chairperson gives voting right to voters
+delegate (voter_address)// voter delegates vote to another voter
+vote (proposal_to)// give your vote to a proposal
+winningProposal() //mechanism to determine the winning proposal
+  Summary
+The above code has defined entities, behaviors, mechanism, etc. Similar to an actually paper contract you and I sign every now and then
+
+  ERC20, the Ethereum token standard
+defines a common list of rules that and Ethereum token has to implement
+include functions like: totalSupply(), balanceOf(), transfer(), etc...
+include events like: Transfer(), Approval(), etc...
+e.g. EOS, OMG, TRX, VEN, ...
+  Programming language
+Solidity (Javascript)
+Serpent (Python)
+Mutan (C)
+LLL (Lisp)
+Each language can be compiled and deployed to the Ethereum blockchain
+
+2 Distributed Consensus: PoW vs. PoS
+Proof of Work (PoW)
+  Dates back to before Bitcoin came out and has been applied in various cryptocurrency protocols including bitcoin
+  “Miners” have to solve hard problems in order to add new blocks, and get rewarded at the same time
+  Energy consumption is significant, “miners” are likely to sell Bitcoin to fund their operation, adding downward pressure to the bitcoin price
+    Proof of Stake (PoS)
+      A relatively new idea since 2011 has been used in few less known altcoins (Peercoin, ShadowCash, Nxt, BlackCoin, etc)
+      The creator of the next block is chosen via various combinations of random selection and stake (wealth, “coin age”, etc.)
+      “Casper” is likely to be adopted by Ethereum
+
+ 3 Casper
+  Casper the Friendly Finality Gadget (FFG) --> current
+  http://34.203.42.208:3000
+A hybrid PoW/PoS consensus mechanism
+PoS overlaying on top of the normal ethash PoW protocol
+Every 50th block is going to be a PoS checkpoint
+Casper is supposed to provide stronger finality than the Bitcoin network
+It punished for voters who are betting on the fake branch
+It is also supposed to solve the problem of centralization due to the “rich get richer” of the large mining pools. A dollar in the rich people’s hands could potentially worth more than a dollar in average people’s hands. In PoS, a dollar is a dollar.
+
+  Casper the Friendly GHOST: Correct-by-Construction (CBC)
+
+4 Version history
+  Version   Code name    Release date
+  0         Olympic      May, 2015
+  1         Frontier       30 July 2015
+  2         Homestead    14 March 2016
+  3   Metropolis (vByzantium)  16 October 2017
+  3.5 Metropolis (vConstantinople)  TBA
+  4         Serenity       TBA
+
+5 The DAO and the fork
+  On Ethereum blockchain
+  Crowdfunded via a token sale in May 2016
+  Failure
+“In June 2016, users exploited a vulnerability in the DAO code to enable them to siphon off one third of The DAO’s funds to a subsidiary account”
+On 20 July 2016 01:20:40 PM +UTC at Block 1,920,000, the Ethereum community decided to hard-fork the Ethereum blockchain to restore virtually all funds to the original contract.
+Thus leading to 2 blockchians:
+  Ethereum as the newly forked chain, and
+  Ethereum Classic, as the original chain.
+
+6 The ICO -- the controversial means of crowdfunding
+  Initial coin offering offers self-generated tokens (e.g. based on ERC20) in exchange for legal tender or other cryptocurrencies (BTC, ETH, ...)
+  Projects on Kickstarter and other traditional crowdfunding do offer actual delivery of “product” -- either physically or virtually
+  ICO offer “premise”: usually some utilities plus mechanism of uplifting the price
+Utility: can be used to pay certain fees, similar to Ether, as well as other functionalities
+Growing potential
+  Lower supply: certain portion of tokens will be bought back in the future and destroyed. Reducing the supply thus favoring price going upward
+  Higher demand: as the project gains popularity, the user base grows, the more users (individual or business entities), the higher the buy pressure
+The “fact” and the hype: Most tokens have got price booms in the past (tens or hundreds of time is not rare). People learned this “fact” and have formed past experience, expecting new ICOs to follow the same pattern, thus making “free money”.
+
+7 Ethereum vs Hyperledger Fabric and R3 Corda
+Characteristic     Ethereum             Hyperledger Fabric             R3 Corda
+Description of platform  Ethereum: Generic blockchain platform 
+                     Hyperledger Fabric: Modular blockchain platform
+                     R3 Corda: Specialized distributed ledger platform for financial industry
+Governance      Ethereum developers    Linux Foundation                R3 
+Mode of operation  Permissionless, pubic or private   Permissioned, private    Permissioned, private
+Consensus            Ethereum: Mining based on PoW, Ledger level 
+                     Hyperledger Fabric: Broad understanding of consensus that allows multiple approaches; Transaction level
+                     R3 Corda: Specific understanding of consensus (i.e. notary nodes); Transaction level
+Smart contracts        Ethereum: Smart contract code (i.e. Solidity) 
+                     Hyperledger Fabric: Smart contract code (i.e. Go, Java)
+                     R3 Corda:Smart contract code (i.e. Kotlin, Java); Smart legal contract (legal prose)
+Currency      Ether; Tokens via smart contract    None; Currency and tokens via chaincode  None
+
+8 Is Blockchian really useful?
+  If all you have is a hammer,...
+  “blockchain best suited for trustless systems. A trustless system is one that has no requirements for authentication and authorization”
+  The hypes: blockchain, AI, big data, NoSQL, microservices, single page applications, cloud, SOA, ...
+  Questions we should ask: for a specific use case, do we really need to use any of these? What fundamental problems is it gonna solve? What are we trading it off with?
+
+Reference: Gartner Hype Cycle for Emerging Technologies, 2017
+https://github.com/ethereum/wiki/wiki/White-Paper
+https://github.com/ethereum/wiki/wiki/Proof-of-Stake-FAQ
+Casper the Friendly Finality Gadget https://arxiv.org/abs/1710.09437
+
+Questions:
+1 PoS: I cannot mine Ether if I didn’t have any Ether to begin with?
+No. Same as bitcoin. Solve problems and add block, in future stake, voters to stake, at least 2% to be qualified as ..
+2 Consistent Mining: No cap like bitcoin and thus there’ll be inflation?
+Yes. Current is 10%, will move to 1-2%, like real inflation.Might be destroy, not generate forever
+3 Smart Contract: What if gas ran out before contract finishes?
+Add a transaction need to include, to ensure run out of gas??
+4 Can ICO ‘s token be exchanged into Share in future? If so, do you think it’ll be another way for public offering for companies?  ( under government ‘s suitable supervise )
+No ,just offering kindness, not sharing business, but also hold significant tokens, so better to ,,but not obligation to do so. Controversial. Stocks has ....
+5 Let’s say we build a new coin on top of Ethereum, how does it work? we need Gas(Ether) to support the functionality of new coins. Does that mean that the new coin is just some kinds of  modified Ether?
+No , ether is fundamental. Small contracts to be executed , you need to include ether. Certain amount will go to miners. So just a expanded version of transaction . all smart contracts. Think of each token as ,, has few classes, methods?
+6 以太坊有过一次分裂，这次分裂的结果是？
+Ethereum help to Dao and Ethereum classic make it die.
+7 The miner need to solve hard questions to get bitcoin, what kind of questions does the miner solve it is very hard in math also or expensive in computing only so it consume many computing CPU time, what kind of tools miner use to solve the question?
+Math problems yes, block chain diagram, lunts? Find a number. Hash of block has special form. Certain number of 0s in beginning. Try different nonce. Get 0s,at beginning of hash,.
+8 What are some resources for beginners to learn more about Ethereum?
+Open community, github. Reports, like wiki repo, all materials to read. Few other thing,, research at the same time. Definetley good to find materials. Sub forum ,people ask questions there.
+9 For Ethereum mining, is it also based on trying out nonce? or something different?
+Both poW, of hash, future moving to PoS.
+10 If it is just try and error to mine, isn't it wasting energy? Does implementation of smart contact all requires such mining?
+Yes, how many time to try, try error to mine , doing so many iterations, to find ,so waste energy. Functions , maximizing computational power, 
+Yes, all these smart contract in block chain, include reward of miners, get ether and add your transaction to the block, so you need smart contract be part of block chain.
+11 There is a difference to bitcoin mining, right? Eth mining requires visiting old states?
+Yes. How exactly works, a bit difference,.
+Yes, another member. Bitcoin is spend and ,,etherum : each adddress is like account. Turn to definition process.
+12 基于eth的token ico的时候只能收ether吗？如果也支持别的支付渠道比如btc，那用btc支付之后获取token的过程是如何实现的？
+Probabaly not. Reward miners with , add to block chian. So put ,,so have to use ether.
+13 What is the point of mining because other than just trying, it does not solve real problem? If smart contact all requires such mining, will the cost be very high?
+Yes, point of money is pow,distribute consensus. Without pow, who should follow? Barrier, or foreback , nobody no who to trust without pow. Make sure we have consensus between people.
+14 The contract account? Is it held by the Ether network or between two parties
+Optional data field. Small contract there. Put small contract on ether network. Yes. 
+15 A good web page: https://www.bcfans.com
